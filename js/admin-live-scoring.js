@@ -207,7 +207,7 @@ class AdminLiveScoring {
                             
                             <div class="d-flex justify-content-between align-items-center">
                                 <div class="team-info">
-                                    <img src="${match.homeTeam.logoUrl || '/images/default-team-logo.png'}" 
+                                    <img style="width: 100px;" src="${match.homeTeam.logoUrl || '/images/default-team-logo.png'}" 
                                          alt="${match.homeTeam.name}" 
                                          class="team-logo me-2">
                                     <span class="fw-bold">${match.homeTeam.name}</span>
@@ -219,7 +219,7 @@ class AdminLiveScoring {
                                 
                                 <div class="team-info text-end">
                                     <span class="fw-bold">${match.awayTeam.name}</span>
-                                    <img src="${match.awayTeam.logoUrl || '/images/default-team-logo.png'}" 
+                                    <img style="width: 100px;" src="${match.awayTeam.logoUrl || '/images/default-team-logo.png'}" 
                                          alt="${match.awayTeam.name}" 
                                          class="team-logo ms-2">
                                 </div>

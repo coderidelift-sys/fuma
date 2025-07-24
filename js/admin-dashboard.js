@@ -25,8 +25,8 @@ class AdminDashboard {
         this.setupEventListeners();
         this.setupNavigation();
         
-        // Load initial data
-        await this.loadDashboardData();
+        // Restore last active section from localStorage or URL hash
+        this.restoreActiveSection();
         
         // Setup auto-sync
         this.setupAutoSync();
@@ -45,8 +45,7 @@ class AdminDashboard {
         // Initialize charts
         this.initializeCharts();
         
-        // Show initial section
-        this.showSection('dashboard');
+        // Note: Section restoration is now handled by restoreActiveSection()
     }
 
     setupEventListeners() {
@@ -92,6 +91,32 @@ class AdminDashboard {
         this.updateActiveNavLink();
     }
 
+    restoreActiveSection() {
+        // Priority: URL hash > localStorage > default (dashboard)
+        let sectionToShow = 'dashboard';
+        
+        // Check URL hash first
+        const hashSection = window.location.hash.substring(1);
+        if (hashSection && this.isValidSection(hashSection)) {
+            sectionToShow = hashSection;
+        } else {
+            // Check localStorage
+            const savedSection = localStorage.getItem('fuma-admin-active-section');
+            if (savedSection && this.isValidSection(savedSection)) {
+                sectionToShow = savedSection;
+            }
+        }
+        
+        // Show the determined section
+        this.showSection(sectionToShow);
+    }
+
+    isValidSection(sectionName) {
+        // Check if the section element exists
+        const sectionElement = document.getElementById(`${sectionName}-section`);
+        return sectionElement !== null;
+    }
+
     showSection(sectionName) {
         // Hide all sections
         document.querySelectorAll('.content-section').forEach(section => {
@@ -103,6 +128,9 @@ class AdminDashboard {
         if (targetSection) {
             targetSection.classList.add('active');
             this.currentSection = sectionName;
+            
+            // Save current section to localStorage
+            localStorage.setItem('fuma-admin-active-section', sectionName);
             
             // Update URL hash
             window.location.hash = sectionName;
@@ -693,6 +721,8 @@ document.addEventListener('DOMContentLoaded', () => {
 window.addEventListener('hashchange', () => {
     const section = window.location.hash.substring(1) || 'dashboard';
     if (window.adminDashboard) {
+        // Save to localStorage when navigating via hash
+        localStorage.setItem('fuma-admin-active-section', section);
         window.adminDashboard.showSection(section);
     }
 });

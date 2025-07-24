@@ -185,7 +185,7 @@ class AdminMatches {
                     <div class="card-body">
                         <div class="row align-items-center mb-3">
                             <div class="col-5 text-center">
-                                <img src="${match.homeTeam.logoUrl || '/images/default-team-logo.png'}" 
+                                <img style="width: 100px;" src="${match.homeTeam.logoUrl || '/images/default-team-logo.png'}" 
                                      alt="${match.homeTeam.name}" 
                                      class="team-logo mb-2"
                                      style="width: 40px; height: 40px; object-fit: contain;">
@@ -199,7 +199,7 @@ class AdminMatches {
                                 `}
                             </div>
                             <div class="col-5 text-center">
-                                <img src="${match.awayTeam.logoUrl || '/images/default-team-logo.png'}" 
+                                <img style="width: 100px;" src="${match.awayTeam.logoUrl || '/images/default-team-logo.png'}" 
                                      alt="${match.awayTeam.name}" 
                                      class="team-logo mb-2"
                                      style="width: 40px; height: 40px; object-fit: contain;">
