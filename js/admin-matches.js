@@ -46,7 +46,7 @@ class AdminMatches {
 
     async loadTournaments() {
         try {
-            const response = await apiClient.getTournaments({ status: 'UPCOMING,ONGOING' });
+            const response = await apiClient.getTournaments({ status: 'ONGOING' });
             if (response.success) {
                 this.tournaments = response.data.tournaments;
             }

@@ -471,4 +471,451 @@ router.get('/matches', [
   }
 });
 
+// Get dashboard statistics
+router.get('/dashboard', async (req, res) => {
+  try {
+    // Get comprehensive dashboard statistics
+    const [
+      totalTournaments,
+      totalTeams,
+      totalPlayers,
+      totalMatches,
+      activeTournaments,
+      liveMatches,
+      completedMatches,
+      scheduledMatches
+    ] = await Promise.all([
+      prisma.tournament.count(),
+      prisma.team.count({ where: { status: 'ACTIVE' } }),
+      prisma.player.count({ where: { status: 'ACTIVE' } }),
+      prisma.match.count(),
+      prisma.tournament.count({ where: { status: 'ONGOING' } }),
+      prisma.match.count({ where: { status: 'LIVE' } }),
+      prisma.match.count({ where: { status: 'COMPLETED' } }),
+      prisma.match.count({ where: { status: 'SCHEDULED' } })
+    ]);
+
+    // Get today's matches
+    const today = new Date();
+    const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+
+    const todayMatches = await prisma.match.findMany({
+      where: {
+        matchDate: {
+          gte: startOfDay,
+          lt: endOfDay
+        }
+      },
+      include: {
+        homeTeam: {
+          select: { name: true, shortName: true, logoUrl: true }
+        },
+        awayTeam: {
+          select: { name: true, shortName: true, logoUrl: true }
+        },
+        tournament: {
+          select: { name: true }
+        }
+      },
+      orderBy: { matchDate: 'asc' }
+    });
+
+    // Get recent completed matches (last 7 days)
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(today.getDate() - 7);
+
+    const recentMatches = await prisma.match.findMany({
+      where: {
+        status: 'COMPLETED',
+        matchDate: {
+          gte: sevenDaysAgo,
+          lte: today
+        }
+      },
+      include: {
+        homeTeam: {
+          select: { name: true, shortName: true, logoUrl: true }
+        },
+        awayTeam: {
+          select: { name: true, shortName: true, logoUrl: true }
+        },
+        tournament: {
+          select: { name: true }
+        }
+      },
+      orderBy: { matchDate: 'desc' },
+      take: 5
+    });
+
+    // Get upcoming matches (next 7 days)
+    const sevenDaysFromNow = new Date();
+    sevenDaysFromNow.setDate(today.getDate() + 7);
+
+    const upcomingMatches = await prisma.match.findMany({
+      where: {
+        status: 'SCHEDULED',
+        matchDate: {
+          gte: today,
+          lte: sevenDaysFromNow
+        }
+      },
+      include: {
+        homeTeam: {
+          select: { name: true, shortName: true, logoUrl: true }
+        },
+        awayTeam: {
+          select: { name: true, shortName: true, logoUrl: true }
+        },
+        tournament: {
+          select: { name: true }
+        }
+      },
+      orderBy: { matchDate: 'asc' },
+      take: 5
+    });
+
+    // Get top scorers (all time)
+    const topScorers = await prisma.playerStatistic.findMany({
+      where: {
+        goals: {
+          gt: 0
+        }
+      },
+      include: {
+        player: {
+          include: {
+            team: {
+              select: {
+                name: true,
+                shortName: true,
+                logoUrl: true
+              }
+            }
+          }
+        },
+        tournament: {
+          select: {
+            name: true
+          }
+        }
+      },
+      orderBy: { goals: 'desc' },
+      take: 5
+    });
+
+    // Calculate match trends (last 30 days)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(today.getDate() - 30);
+
+    const matchTrends = await prisma.match.groupBy({
+      by: ['status'],
+      where: {
+        matchDate: {
+          gte: thirtyDaysAgo,
+          lte: today
+        }
+      },
+      _count: {
+        id: true
+      }
+    });
+
+    const formattedMatchTrends = matchTrends.reduce((acc, trend) => {
+      acc[trend.status.toLowerCase()] = trend._count.id;
+      return acc;
+    }, {});
+
+    // Get total goals this month
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const totalGoalsThisMonth = await prisma.match.aggregate({
+      where: {
+        status: 'COMPLETED',
+        matchDate: {
+          gte: startOfMonth,
+          lte: today
+        }
+      },
+      _sum: {
+        homeScore: true,
+        awayScore: true
+      }
+    });
+
+    const monthlyGoals = (totalGoalsThisMonth._sum.homeScore || 0) + (totalGoalsThisMonth._sum.awayScore || 0);
+
+    res.json({
+      success: true,
+      data: {
+        overview: {
+          totalTournaments,
+          totalTeams,
+          totalPlayers,
+          totalMatches,
+          activeTournaments,
+          liveMatches,
+          completedMatches,
+          scheduledMatches,
+          monthlyGoals
+        },
+        todayMatches,
+        recentMatches,
+        upcomingMatches,
+        topScorers,
+        trends: {
+          matchTrends: formattedMatchTrends,
+          period: 'last_30_days'
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('Get dashboard statistics error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
+// Get recent activity
+router.get('/recent-activity', [
+  query('limit').optional().isInt({ min: 1, max: 50 }),
+  query('days').optional().isInt({ min: 1, max: 30 })
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array()
+      });
+    }
+
+    const { limit = 20, days = 7 } = req.query;
+    
+    // Calculate date range
+    const now = new Date();
+    const startDate = new Date();
+    startDate.setDate(now.getDate() - parseInt(days));
+
+    // Get recent matches
+    const recentMatches = await prisma.match.findMany({
+      where: {
+        matchDate: {
+          gte: startDate,
+          lte: now
+        }
+      },
+      include: {
+        homeTeam: {
+          select: { name: true, shortName: true, logoUrl: true }
+        },
+        awayTeam: {
+          select: { name: true, shortName: true, logoUrl: true }
+        },
+        tournament: {
+          select: { name: true }
+        }
+      },
+      orderBy: { matchDate: 'desc' },
+      take: parseInt(limit)
+    });
+
+    // Get recent goals and events
+    const recentEvents = await prisma.matchEvent.findMany({
+      where: {
+        match: {
+          matchDate: {
+            gte: startDate,
+            lte: now
+          }
+        },
+        eventType: {
+          in: ['GOAL', 'RED_CARD', 'YELLOW_CARD']
+        }
+      },
+      include: {
+        player: {
+          include: {
+            team: {
+              select: { name: true, shortName: true, logoUrl: true }
+            }
+          }
+        },
+        match: {
+          include: {
+            homeTeam: {
+              select: { name: true, shortName: true }
+            },
+            awayTeam: {
+              select: { name: true, shortName: true }
+            },
+            tournament: {
+              select: { name: true }
+            }
+          }
+        }
+      },
+      orderBy: { createdAt: 'desc' },
+      take: parseInt(limit)
+    });
+
+    // Get recent team updates (new teams, status changes)
+    const recentTeams = await prisma.team.findMany({
+      where: {
+        createdAt: {
+          gte: startDate,
+          lte: now
+        }
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 5
+    });
+
+    // Get recent player updates
+    const recentPlayers = await prisma.player.findMany({
+      include: {
+        team: {
+          select: { name: true, shortName: true, logoUrl: true }
+        }
+      },
+      orderBy: { id: 'desc' }, // Use id instead of createdAt since Player model doesn't have createdAt
+      take: 5
+    });
+
+    // Get recent tournament updates
+    const recentTournaments = await prisma.tournament.findMany({
+      where: {
+        createdAt: {
+          gte: startDate,
+          lte: now
+        }
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 5
+    });
+
+    // Format activity feed
+    const activityFeed = [];
+
+    // Add match activities
+    recentMatches.forEach(match => {
+      activityFeed.push({
+        id: `match_${match.id}`,
+        type: 'match',
+        action: match.status.toLowerCase(),
+        timestamp: match.matchDate,
+        data: {
+          match,
+          description: `${match.homeTeam.name} vs ${match.awayTeam.name}`,
+          tournament: match.tournament.name,
+          score: match.status === 'COMPLETED' ? `${match.homeScore}-${match.awayScore}` : null
+        }
+      });
+    });
+
+    // Add event activities
+    recentEvents.forEach(event => {
+      activityFeed.push({
+        id: `event_${event.id}`,
+        type: 'event',
+        action: event.eventType.toLowerCase(),
+        timestamp: event.createdAt,
+        data: {
+          event,
+          description: `${event.player.name} - ${event.eventType.replace('_', ' ')}`,
+          match: `${event.match.homeTeam.name} vs ${event.match.awayTeam.name}`,
+          tournament: event.match.tournament.name
+        }
+      });
+    });
+
+    // Add team activities
+    recentTeams.forEach(team => {
+      activityFeed.push({
+        id: `team_${team.id}`,
+        type: 'team',
+        action: 'created',
+        timestamp: team.createdAt,
+        data: {
+          team,
+          description: `New team: ${team.name}`,
+          location: `${team.city}, ${team.country}`
+        }
+      });
+    });
+
+    // Add player activities
+    recentPlayers.forEach(player => {
+      activityFeed.push({
+        id: `player_${player.id}`,
+        type: 'player',
+        action: 'created',
+        timestamp: new Date(), // Use current date since Player model doesn't have createdAt
+        data: {
+          player,
+          description: `New player: ${player.firstName} ${player.lastName}`,
+          team: player.team?.name || 'No team',
+          position: player.position
+        }
+      });
+    });
+
+    // Add tournament activities
+    recentTournaments.forEach(tournament => {
+      activityFeed.push({
+        id: `tournament_${tournament.id}`,
+        type: 'tournament',
+        action: 'created',
+        timestamp: tournament.createdAt,
+        data: {
+          tournament,
+          description: `New tournament: ${tournament.name}`,
+          status: tournament.status
+        }
+      });
+    });
+
+    // Sort by timestamp (most recent first) and limit
+    const sortedActivity = activityFeed
+      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+      .slice(0, parseInt(limit));
+
+    // Calculate activity summary
+    const activitySummary = {
+      totalActivities: sortedActivity.length,
+      matchActivities: sortedActivity.filter(a => a.type === 'match').length,
+      eventActivities: sortedActivity.filter(a => a.type === 'event').length,
+      teamActivities: sortedActivity.filter(a => a.type === 'team').length,
+      playerActivities: sortedActivity.filter(a => a.type === 'player').length,
+      tournamentActivities: sortedActivity.filter(a => a.type === 'tournament').length,
+      period: `last_${days}_days`
+    };
+
+    res.json({
+      success: true,
+      data: {
+        activities: sortedActivity,
+        summary: activitySummary,
+        pagination: {
+          limit: parseInt(limit),
+          total: sortedActivity.length,
+          hasMore: activityFeed.length > parseInt(limit)
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('Get recent activity error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
 module.exports = router;

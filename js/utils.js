@@ -190,6 +190,11 @@ const FumaUtils = {
             }
             
             if (element) {
+                // Store original content if not already stored
+                if (!element.dataset.originalContent) {
+                    element.dataset.originalContent = element.innerHTML;
+                }
+                
                 element.innerHTML = `
                     <div class="d-flex justify-content-center align-items-center p-4">
                         <div class="spinner-border text-primary me-2" role="status">
@@ -198,6 +203,18 @@ const FumaUtils = {
                         <span>${text}</span>
                     </div>
                 `;
+            }
+        },
+
+        // Hide loading spinner and restore original content
+        hideLoading(element) {
+            if (typeof element === 'string') {
+                element = FumaUtils.dom.get(element);
+            }
+            
+            if (element && element.dataset.originalContent) {
+                element.innerHTML = element.dataset.originalContent;
+                delete element.dataset.originalContent;
             }
         },
 

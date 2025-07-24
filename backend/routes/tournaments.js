@@ -8,7 +8,12 @@ const prisma = new PrismaClient();
 
 // Get all tournaments with filters
 router.get('/', [
-  query('status').optional().isIn(['UPCOMING', 'ONGOING', 'COMPLETED', 'CANCELLED']),
+  query('status').optional().custom(val => {
+    const validStatuses = ['UPCOMING', 'ONGOING', 'COMPLETED', 'CANCELLED'];
+    return Array.isArray(val) 
+      ? val.every(v => validStatuses.includes(v))
+      : validStatuses.includes(val);
+  }).withMessage('Status must be one of: UPCOMING, ONGOING, COMPLETED, CANCELLED or an array of these values'),
   query('type').optional().isIn(['LEAGUE', 'KNOCKOUT', 'GROUP_KNOCKOUT']),
   query('search').optional().trim().isLength({ min: 1, max: 100 }),
   query('page').optional().isInt({ min: 1 }),
@@ -29,7 +34,9 @@ router.get('/', [
 
     // Build where clause
     const where = {};
-    if (status) where.status = status;
+    if (status) {
+      where.status = Array.isArray(status) ? { in: status } : status;
+    }
     if (type) where.tournamentType = type;
     if (search) {
       where.OR = [
