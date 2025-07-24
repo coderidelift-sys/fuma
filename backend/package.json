@@ -8,7 +8,11 @@
     "dev": "nodemon server.js",
     "test": "jest",
     "migrate": "npx prisma migrate dev",
-    "seed": "node prisma/seed.js"
+    "seed": "node prisma/seed.js",
+    "db:reset": "node prisma/reset.js",
+    "db:fresh": "npm run db:reset && npm run seed",
+    "db:optimize": "npx prisma db execute --file ./prisma/optimize.sql",
+    "db:setup": "npx prisma generate && npx prisma migrate dev && npm run seed"
   },
   "prisma": {
     "seed": "node prisma/seed.js"
