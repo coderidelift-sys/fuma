@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - FUMA</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles/admin-dashboard.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-futbol me-2"></i>
+                FUMA Admin
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#dashboard">
+                            <i class="fas fa-tachometer-alt me-1"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#teams">
+                            <i class="fas fa-users me-1"></i> Teams
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#players">
+                            <i class="fas fa-user me-1"></i> Players
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#tournaments">
+                            <i class="fas fa-trophy me-1"></i> Tournaments
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#matches">
+                            <i class="fas fa-futbol me-1"></i> Matches
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#live-scoring">
+                            <i class="fas fa-broadcast-tower me-1"></i> Live Scoring
+                        </a>
+                    </li>
+                </ul>
+                
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle me-1"></i>
+                            <span id="username">Admin</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" id="profileBtn">
+                                <i class="fas fa-user me-2"></i> Profile
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" id="settingsBtn">
+                                <i class="fas fa-cog me-2"></i> Settings
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" id="logoutBtn">
+                                <i class="fas fa-sign-out-alt me-2"></i> Logout
+                            </a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#dashboard" data-section="dashboard">
+                                <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#teams" data-section="teams">
+                                <i class="fas fa-users me-2"></i> Teams
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#players" data-section="players">
+                                <i class="fas fa-user me-2"></i> Players
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#tournaments" data-section="tournaments">
+                                <i class="fas fa-trophy me-2"></i> Tournaments
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#matches" data-section="matches">
+                                <i class="fas fa-futbol me-2"></i> Matches
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#live-scoring" data-section="live-scoring">
+                                <i class="fas fa-broadcast-tower me-2"></i> Live Scoring
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main Content Area -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <!-- Dashboard Section -->
+                <div id="dashboard-section" class="content-section active">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2">Dashboard</h1>
+                        <div class="btn-toolbar mb-2 mb-md-0">
+                            <div class="btn-group me-2">
+                                <button type="button" class="btn btn-sm btn-outline-secondary" id="refreshDashboard">
+                                    <i class="fas fa-sync-alt me-1"></i> Refresh
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" id="exportData">
+                                    <i class="fas fa-download me-1"></i> Export
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Stats Cards -->
+                    <div class="row mb-4">
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-left-primary shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                                Total Teams
+                                            </div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="totalTeams">0</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-left-success shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                                Total Players
+                                            </div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="totalPlayers">0</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-user fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-left-info shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                                Active Tournaments
+                                            </div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="activeTournaments">0</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-trophy fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-left-warning shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                                Total Matches
+                                            </div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="totalMatches">0</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-futbol fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Row -->
+                    <div class="row mb-4">
+                        <div class="col-xl-8 col-lg-7">
+                            <div class="card shadow mb-4">
+                                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                    <h6 class="m-0 font-weight-bold text-primary">Matches Overview</h6>
+                                    <div class="dropdown no-arrow">
+                                        <select class="form-select form-select-sm" id="matchesChartPeriod">
+                                            <option value="7">Last 7 Days</option>
+                                            <option value="30" selected>Last 30 Days</option>
+                                            <option value="90">Last 90 Days</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="chart-area">
+                                        <canvas id="matchesChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-4 col-lg-5">
+                            <div class="card shadow mb-4">
+                                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                    <h6 class="m-0 font-weight-bold text-primary">Tournament Status</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="chart-pie pt-4 pb-2">
+                                        <canvas id="tournamentStatusChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity & Sync Status -->
+                    <div class="row">
+                        <div class="col-lg-6 mb-4">
+                            <div class="card shadow mb-4">
+                                <div class="card-header py-3">
+                                    <h6 class="m-0 font-weight-bold text-primary">Recent Activity</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div id="recentActivity">
+                                        <!-- Recent activity will be loaded here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6 mb-4">
+                            <div class="card shadow mb-4">
+                                <div class="card-header py-3">
+                                    <h6 class="m-0 font-weight-bold text-primary">System Status</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between">
+                                            <span>Last Sync:</span>
+                                            <span id="lastSync" class="text-muted">--</span>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between">
+                                            <span>API Status:</span>
+                                            <span id="apiStatus" class="badge bg-success">Online</span>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between">
+                                            <span>Live Matches:</span>
+                                            <span id="liveMatches" class="badge bg-info">0</span>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-primary btn-sm w-100" id="forceSyncBtn">
+                                        <i class="fas fa-sync-alt me-1"></i> Force Sync
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Teams Section -->
+                <div id="teams-section" class="content-section">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2">Teams Management</h1>
+                        <div class="btn-toolbar mb-2 mb-md-0">
+                            <button type="button" class="btn btn-primary" id="addTeamBtn">
+                                <i class="fas fa-plus me-1"></i> Add Team
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Teams Filters -->
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" id="teamSearch" placeholder="Search teams...">
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="teamStatusFilter">
+                                <option value="">All Status</option>
+                                <option value="ACTIVE">Active</option>
+                                <option value="INACTIVE">Inactive</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="teamSortBy">
+                                <option value="name">Sort by Name</option>
+                                <option value="createdAt">Sort by Date</option>
+                                <option value="playerCount">Sort by Players</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-outline-secondary w-100" id="resetTeamFilters">
+                                <i class="fas fa-undo me-1"></i> Reset
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Teams Table -->
+                    <div class="card">
+                        <div class="card-body">
+                            <div id="teamsTableContainer">
+                                <!-- Teams table will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Players Section -->
+                <div id="players-section" class="content-section">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2">Players Management</h1>
+                        <div class="btn-toolbar mb-2 mb-md-0">
+                            <button type="button" class="btn btn-primary" id="addPlayerBtn">
+                                <i class="fas fa-plus me-1"></i> Add Player
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Players Filters -->
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <input type="text" class="form-control" id="playerSearch" placeholder="Search players...">
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select" id="playerTeamFilter">
+                                <option value="">All Teams</option>
+                                <!-- Teams will be loaded here -->
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select" id="playerPositionFilter">
+                                <option value="">All Positions</option>
+                                <option value="GOALKEEPER">Goalkeeper</option>
+                                <option value="DEFENDER">Defender</option>
+                                <option value="MIDFIELDER">Midfielder</option>
+                                <option value="FORWARD">Forward</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select" id="playerStatusFilter">
+                                <option value="">All Status</option>
+                                <option value="ACTIVE">Active</option>
+                                <option value="INJURED">Injured</option>
+                                <option value="SUSPENDED">Suspended</option>
+                                <option value="TRANSFERRED">Transferred</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select" id="playerSortBy">
+                                <option value="lastName">Sort by Name</option>
+                                <option value="jerseyNumber">Sort by Number</option>
+                                <option value="position">Sort by Position</option>
+                            </select>
+                        </div>
+                        <div class="col-md-1">
+                            <button class="btn btn-outline-secondary w-100" id="resetPlayerFilters">
+                                <i class="fas fa-undo"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Players Table -->
+                    <div class="card">
+                        <div class="card-body">
+                            <div id="playersTableContainer">
+                                <!-- Players table will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tournaments Section -->
+                <div id="tournaments-section" class="content-section">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2">Tournaments Management</h1>
+                        <div class="btn-toolbar mb-2 mb-md-0">
+                            <button type="button" class="btn btn-primary" id="addTournamentBtn">
+                                <i class="fas fa-plus me-1"></i> Add Tournament
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tournaments content will be loaded here -->
+                    <div id="tournamentsContent">
+                        <!-- Tournaments management interface -->
+                    </div>
+                </div>
+
+                <!-- Matches Section -->
+                <div id="matches-section" class="content-section">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2">Matches Management</h1>
+                        <div class="btn-toolbar mb-2 mb-md-0">
+                            <button type="button" class="btn btn-primary" id="addMatchBtn">
+                                <i class="fas fa-plus me-1"></i> Add Match
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Matches content will be loaded here -->
+                    <div id="matchesContent">
+                        <!-- Matches management interface -->
+                    </div>
+                </div>
+
+                <!-- Live Scoring Section -->
+                <div id="live-scoring-section" class="content-section">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2">Live Scoring</h1>
+                        <div class="btn-toolbar mb-2 mb-md-0">
+                            <div class="btn-group me-2">
+                                <button type="button" class="btn btn-sm btn-success" id="startLiveMatch">
+                                    <i class="fas fa-play me-1"></i> Start Match
+                                </button>
+                                <button type="button" class="btn btn-sm btn-warning" id="pauseLiveMatch">
+                                    <i class="fas fa-pause me-1"></i> Pause
+                                </button>
+                                <button type="button" class="btn btn-sm btn-danger" id="endLiveMatch">
+                                    <i class="fas fa-stop me-1"></i> End Match
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Live Scoring content will be loaded here -->
+                    <div id="liveScoringContent">
+                        <!-- Live scoring interface -->
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modals will be inserted here by JavaScript -->
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="js/api-client.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/admin-dashboard.js"></script>
+    <script src="js/admin-teams.js"></script>
+    <script src="js/admin-players.js"></script>
+    <script src="js/admin-tournaments.js"></script>
+    <script src="js/admin-matches.js"></script>
+    <script src="js/admin-live-scoring.js"></script>
+</body>
+</html>
