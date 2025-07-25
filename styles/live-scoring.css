@@ -1,0 +1,345 @@
+/* Live Scoring Specific Styles */
+.live-scoring-container {
+    background: #f8f9fa;
+    min-height: calc(100vh - 200px);
+}
+
+.live-match-card {
+    border: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    margin-bottom: 1rem;
+}
+
+.live-match-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+.live-indicator {
+    animation: pulse 2s infinite;
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+.match-score {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.match-time {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #e74c3c;
+}
+
+.team-logo {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.quick-action-btn {
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    margin: 0.25rem;
+}
+
+.quick-action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.control-panel {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.control-panel .card {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    backdrop-filter: blur(10px);
+}
+
+.control-panel .card-header {
+    background: rgba(255,255,255,0.1);
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+}
+
+.score-control {
+    text-align: center;
+    padding: 1rem;
+}
+
+.score-display {
+    font-size: 3rem;
+    font-weight: bold;
+    margin: 1rem 0;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.score-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin: 0 0.25rem;
+    transition: all 0.3s ease;
+}
+
+.score-btn:hover {
+    transform: scale(1.1);
+}
+
+.event-timeline {
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 1rem;
+}
+
+.event-item {
+    padding: 0.75rem;
+    border-left: 4px solid #ddd;
+    margin-bottom: 0.75rem;
+    background: #f8f9fa;
+    border-radius: 0 8px 8px 0;
+    transition: all 0.3s ease;
+}
+
+.event-item:hover {
+    background: #e9ecef;
+    border-left-color: #007bff;
+}
+
+.event-goal {
+    border-left-color: #28a745;
+    background: #d4edda;
+}
+
+.event-yellow-card {
+    border-left-color: #ffc107;
+    background: #fff3cd;
+}
+
+.event-red-card {
+    border-left-color: #dc3545;
+    background: #f8d7da;
+}
+
+.stats-widget {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 1rem;
+}
+
+.stats-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #eee;
+}
+
+.stats-item:last-child {
+    border-bottom: none;
+}
+
+.status-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 0.5rem;
+}
+
+.status-live {
+    background: #dc3545;
+    animation: pulse 1.5s infinite;
+}
+
+.status-scheduled {
+    background: #ffc107;
+}
+
+.status-completed {
+    background: #28a745;
+}
+
+.floating-controls {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    z-index: 1000;
+}
+
+.floating-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: none;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+}
+
+.floating-btn:hover {
+    transform: scale(1.1);
+}
+
+.match-selector {
+    background: white;
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 1.5rem;
+}
+
+.match-selector .form-select {
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 0.75rem;
+    font-size: 1rem;
+}
+
+.match-selector .form-select:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+}
+
+.live-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+.stat-value {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    color: #6c757d;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.progress-ring {
+    width: 60px;
+    height: 60px;
+}
+
+.progress-ring circle {
+    fill: transparent;
+    stroke: #e9ecef;
+    stroke-width: 4;
+}
+
+.progress-ring .progress {
+    stroke: #007bff;
+    stroke-linecap: round;
+    transition: stroke-dasharray 0.5s ease;
+}
+
+.notification-toast {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 1050;
+    min-width: 300px;
+}
+
+.compact-mode .live-match-card {
+    padding: 0.75rem;
+}
+
+.compact-mode .match-score {
+    font-size: 1.5rem;
+}
+
+.compact-mode .team-logo {
+    width: 30px;
+    height: 30px;
+}
+
+@media (max-width: 768px) {
+    .live-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .floating-controls {
+        bottom: 1rem;
+        right: 1rem;
+    }
+    
+    .floating-btn {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .control-panel {
+        padding: 1rem;
+    }
+    
+    .score-display {
+        font-size: 2rem;
+    }
+}
+
+.smooth-transition {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.slide-up {
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}

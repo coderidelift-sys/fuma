@@ -71,7 +71,10 @@ router.get('/', [
           awayTeam: {
             select: { id: true, name: true, shortName: true, logoUrl: true }
           },
-          liveData: true
+          liveData: true,
+          _count: {
+            select: { events: true }
+          }
         },
         orderBy: { matchDate: 'desc' },
         skip: parseInt(skip),
@@ -602,6 +605,79 @@ router.post('/:id/live', authenticateToken, requireRole(['ADMIN']), [
 
   } catch (error) {
     console.error('Update live data error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+});
+
+// Update live match data (Admin only) - PUT method for frontend compatibility
+router.put('/:id/live', authenticateToken, requireRole(['ADMIN']), [
+  body('currentMinute').optional().isInt({ min: 0, max: 120 }),
+  body('additionalTime').optional().isInt({ min: 0, max: 30 }),
+  body('possessionHome').optional().isInt({ min: 0, max: 100 }),
+  body('possessionAway').optional().isInt({ min: 0, max: 100 }),
+  body('shotsHome').optional().isInt({ min: 0 }),
+  body('shotsAway').optional().isInt({ min: 0 }),
+  body('cornersHome').optional().isInt({ min: 0 }),
+  body('cornersAway').optional().isInt({ min: 0 }),
+  body('foulsHome').optional().isInt({ min: 0 }),
+  body('foulsAway').optional().isInt({ min: 0 })
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array()
+      });
+    }
+
+    const { id } = req.params;
+    const updateData = { ...req.body };
+
+    // Ensure possession adds up to 100
+    if (updateData.possessionHome !== undefined && updateData.possessionAway === undefined) {
+      updateData.possessionAway = 100 - updateData.possessionHome;
+    } else if (updateData.possessionAway !== undefined && updateData.possessionHome === undefined) {
+      updateData.possessionHome = 100 - updateData.possessionAway;
+    }
+
+    const liveData = await prisma.liveMatchData.upsert({
+      where: { matchId: parseInt(id) },
+      update: updateData,
+      create: {
+        matchId: parseInt(id),
+        currentMinute: updateData.currentMinute || 0,
+        additionalTime: updateData.additionalTime || 0,
+        possessionHome: updateData.possessionHome || 50,
+        possessionAway: updateData.possessionAway || 50,
+        shotsHome: updateData.shotsHome || 0,
+        shotsAway: updateData.shotsAway || 0,
+        cornersHome: updateData.cornersHome || 0,
+        cornersAway: updateData.cornersAway || 0,
+        foulsHome: updateData.foulsHome || 0,
+        foulsAway: updateData.foulsAway || 0
+      }
+    });
+
+    // Send real-time statistics update
+    await pusher.trigger(`match-${id}`, 'stats-update', {
+      matchId: parseInt(id),
+      liveData,
+      timestamp: new Date().toISOString()
+    });
+
+    res.json({
+      success: true,
+      message: 'Live data updated successfully',
+      data: { liveData }
+    });
+
+  } catch (error) {
+    console.error('Update live data error (PUT):', error);
     res.status(500).json({
       success: false,
       message: 'Internal server error'

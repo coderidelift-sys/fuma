@@ -230,6 +230,10 @@ class APIClient {
         return this.get(`/matches/${id}/live`);
     }
 
+    async updateLiveMatch(id, liveData) {
+        return this.put(`/matches/${id}/live`, liveData);
+    }
+
     async addMatchEvent(matchId, eventData) {
         return this.post(`/matches/${matchId}/events`, eventData);
     }
