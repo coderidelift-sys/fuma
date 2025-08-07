@@ -24,29 +24,74 @@
                 <p class="text-muted">Sign in to your account</p>
             </div>
 
-            <!-- Login Form -->
-            <form id="loginForm">
+            <!-- Enhanced Login Form -->
+            <form id="loginForm" novalidate>
                 <div class="form-floating mb-3">
-                    <input type="email" class="form-control" id="email" placeholder="Email" required>
-                    <label for="email">Email Address</label>
-                </div>
-                
-                <div class="form-floating mb-3">
-                    <input type="password" class="form-control" id="password" placeholder="Password" required>
-                    <label for="password">Password</label>
-                </div>
-                
-                <div class="form-check mb-3">
-                    <input class="form-check-input" type="checkbox" id="rememberMe">
-                    <label class="form-check-label" for="rememberMe">
-                        Remember me
+                    <input type="email" 
+                           class="form-control" 
+                           id="email" 
+                           name="email"
+                           placeholder="Email" 
+                           required 
+                           autocomplete="email">
+                    <label for="email">
+                        <i class="fas fa-envelope me-2"></i>Email Address
                     </label>
+                    <div class="invalid-feedback">
+                        Please provide a valid email address.
+                    </div>
+                    <div class="valid-feedback">
+                        Email looks good!
+                    </div>
                 </div>
                 
-                <button type="submit" class="btn btn-primary w-100 mb-3">
+                <div class="form-floating mb-3 position-relative">
+                    <input type="password" 
+                           class="form-control" 
+                           id="password" 
+                           name="password"
+                           placeholder="Password" 
+                           required 
+                           autocomplete="current-password">
+                    <label for="password">
+                        <i class="fas fa-lock me-2"></i>Password
+                    </label>
+                    <button type="button" 
+                            class="btn btn-link position-absolute end-0 top-50 translate-middle-y me-3 p-0 password-toggle"
+                            data-target="password"
+                            style="z-index: 10; border: none; background: none;"
+                            tabindex="-1">
+                        <i class="fas fa-eye text-muted"></i>
+                    </button>
+                    <div class="invalid-feedback">
+                        Please provide your password.
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="rememberMe" name="rememberMe">
+                        <label class="form-check-label" for="rememberMe">
+                            Remember me
+                        </label>
+                    </div>
+                    <a href="#" class="text-decoration-none" data-bs-toggle="modal" data-bs-target="#forgotPasswordModal">
+                        Forgot password?
+                    </a>
+                </div>
+                
+                <button type="submit" class="btn btn-primary w-100 mb-3" id="loginBtn">
                     <i class="fas fa-sign-in-alt me-2"></i>
                     Sign In
                 </button>
+
+                <!-- Loading State (Hidden by default) -->
+                <div class="text-center d-none" id="loadingState">
+                    <div class="spinner-border text-primary me-2" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <span>Signing you in...</span>
+                </div>
             </form>
 
             <!-- Demo Accounts -->
@@ -84,11 +129,39 @@
         </div>
     </div>
 
+    <!-- Forgot Password Modal -->
+    <div class="modal fade" id="forgotPasswordModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Reset Password</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted mb-3">Enter your email address and we'll send you a link to reset your password.</p>
+                    <form id="forgotPasswordForm">
+                        <div class="form-floating mb-3">
+                            <input type="email" class="form-control" id="resetEmail" placeholder="Email" required>
+                            <label for="resetEmail">Email Address</label>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-2"></i>Send Reset Link
+                            </button>
+                        </div>
+                    </form>
+                    <div id="resetMessageContainer" class="mt-3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Custom JS -->
     <script src="js/api-client.js"></script>
     <script src="js/utils.js"></script>
     <script src="js/auth.js"></script>
+    <script src="js/login-enhanced.js"></script>
 </body>
 </html>

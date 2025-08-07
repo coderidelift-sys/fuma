@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CORS Troubleshooting - FUMA</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .code-block {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 0.375rem;
+            padding: 1rem;
+            margin: 1rem 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+        }
+        .alert-cors {
+            background-color: #fff3cd;
+            border-color: #ffeaa7;
+            color: #856404;
+        }
+        .step-number {
+            background-color: #007bff;
+            color: white;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container my-5">
+        <div class="row">
+            <div class="col-md-10 mx-auto">
+                <div class="text-center mb-5">
+                    <h1 class="display-4">
+                        <i class="fas fa-shield-alt text-warning me-3"></i>
+                        CORS Troubleshooting Guide
+                    </h1>
+                    <p class="lead">Fix Cross-Origin Resource Sharing (CORS) issues in your FUMA application</p>
+                </div>
+
+                <div class="alert alert-cors" role="alert">
+                    <h4 class="alert-heading">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        CORS Error Detected
+                    </h4>
+                    <p>You're seeing this page because your frontend cannot communicate with the backend API due to CORS restrictions.</p>
+                    <hr>
+                    <p class="mb-0">Follow the steps below to resolve this issue.</p>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h3><i class="fas fa-info-circle me-2"></i>What is CORS?</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>Cross-Origin Resource Sharing (CORS) is a security feature implemented by web browsers that blocks requests from one domain to another unless the server explicitly allows it.</p>
+                        <p>In your case:</p>
+                        <ul>
+                            <li><strong>Frontend:</strong> Running on <code>http://127.0.0.1:3001</code></li>
+                            <li><strong>Backend API:</strong> Running on <code>http://localhost:3002</code></li>
+                        </ul>
+                        <p>Since these are different origins (different ports), CORS restrictions apply.</p>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h3><i class="fas fa-tools me-2"></i>Quick Fix Solutions</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5><span class="step-number">1</span>Express.js Backend</h5>
+                                <p>If you're using Express.js, add this to your server:</p>
+                                <div class="code-block">
+const cors = require('cors');
+
+app.use(cors({
+    origin: [
+        'http://localhost:3001',
+        'http://127.0.0.1:3001'
+    ],
+    credentials: true
+}));
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h5><span class="step-number">2</span>Manual Headers</h5>
+                                <p>Or add CORS headers manually:</p>
+                                <div class="code-block">
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', 
+        'http://127.0.0.1:3001');
+    res.header('Access-Control-Allow-Methods', 
+        'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 
+        'Content-Type, Authorization, Accept');
+    res.header('Access-Control-Allow-Credentials', 
+        'true');
+    
+    if (req.method === 'OPTIONS') {
+        res.sendStatus(200);
+    } else {
+        next();
+    }
+});
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h3><i class="fas fa-code me-2"></i>Framework-Specific Solutions</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="accordion" id="frameworkAccordion">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="expressHeading">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#expressCollapse">
+                                        Express.js / Node.js
+                                    </button>
+                                </h2>
+                                <div id="expressCollapse" class="accordion-collapse collapse show" data-bs-parent="#frameworkAccordion">
+                                    <div class="accordion-body">
+                                        <div class="code-block">
+// Install cors package
+npm install cors
+
+// In your server file
+const cors = require('cors');
+
+app.use(cors({
+    origin: ['http://localhost:3001', 'http://127.0.0.1:3001'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+    credentials: true
+}));
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="fastifyHeading">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#fastifyCollapse">
+                                        Fastify
+                                    </button>
+                                </h2>
+                                <div id="fastifyCollapse" class="accordion-collapse collapse" data-bs-parent="#frameworkAccordion">
+                                    <div class="accordion-body">
+                                        <div class="code-block">
+// Install plugin
+npm install @fastify/cors
+
+// Register plugin
+await fastify.register(require('@fastify/cors'), {
+    origin: ['http://localhost:3001', 'http://127.0.0.1:3001'],
+    credentials: true
+});
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="djangoHeading">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#djangoCollapse">
+                                        Django
+                                    </button>
+                                </h2>
+                                <div id="djangoCollapse" class="accordion-collapse collapse" data-bs-parent="#frameworkAccordion">
+                                    <div class="accordion-body">
+                                        <div class="code-block">
+# Install django-cors-headers
+pip install django-cors-headers
+
+# In settings.py
+INSTALLED_APPS = [
+    # ...
+    'corsheaders',
+]
+
+MIDDLEWARE = [
+    # ...
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    # ...
+]
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3001",
+    "http://127.0.0.1:3001",
+]
+
+CORS_ALLOW_CREDENTIALS = True
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="flaskHeading">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flaskCollapse">
+                                        Flask
+                                    </button>
+                                </h2>
+                                <div id="flaskCollapse" class="accordion-collapse collapse" data-bs-parent="#frameworkAccordion">
+                                    <div class="accordion-body">
+                                        <div class="code-block">
+# Install flask-cors
+pip install flask-cors
+
+# In your Flask app
+from flask_cors import CORS
+
+CORS(app, origins=['http://localhost:3001', 'http://127.0.0.1:3001'], 
+     supports_credentials=True)
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h3><i class="fas fa-bug me-2"></i>Common Issues & Solutions</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5>❌ Common Mistakes</h5>
+                                <ul>
+                                    <li>Using <code>origin: '*'</code> with <code>credentials: true</code></li>
+                                    <li>Not handling OPTIONS requests</li>
+                                    <li>Missing required headers in allowed list</li>
+                                    <li>Wrong origin format (http vs https)</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5>✅ Best Practices</h5>
+                                <ul>
+                                    <li>Specify exact origins instead of wildcards</li>
+                                    <li>Always handle preflight OPTIONS requests</li>
+                                    <li>Include all necessary headers</li>
+                                    <li>Use environment variables for origins</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h3><i class="fas fa-vial me-2"></i>Test Your Fix</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>After implementing the CORS fix, test your configuration:</p>
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                            <button id="testCors" class="btn btn-primary me-md-2">
+                                <i class="fas fa-play me-1"></i> Test CORS Configuration
+                            </button>
+                            <a href="integration-test.html" class="btn btn-outline-secondary">
+                                <i class="fas fa-flask me-1"></i> Run Full Integration Tests
+                            </a>
+                        </div>
+                        <div id="testResult" class="mt-3"></div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-question-circle me-2"></i>Still Having Issues?</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>If you're still experiencing CORS issues after following this guide:</p>
+                        <ol>
+                            <li>Check your browser's developer console for specific error messages</li>
+                            <li>Verify your backend server is running on the correct port</li>
+                            <li>Ensure the frontend and backend URLs match exactly</li>
+                            <li>Try restarting both frontend and backend servers</li>
+                            <li>Check if your hosting provider has additional CORS restrictions</li>
+                        </ol>
+                        <div class="alert alert-info">
+                            <strong>Pro Tip:</strong> Use your browser's Network tab to inspect the actual requests being made and their responses.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/api-client-enhanced.js"></script>
+    
+    <script>
+        document.getElementById('testCors').addEventListener('click', async function() {
+            const button = this;
+            const resultDiv = document.getElementById('testResult');
+            
+            // Show loading state
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Testing...';
+            
+            try {
+                // Test CORS configuration
+                const result = await window.apiClient.testConnection();
+                
+                if (result.success) {
+                    resultDiv.innerHTML = `
+                        <div class="alert alert-success" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <strong>Success!</strong> CORS configuration is working correctly.
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="alert alert-danger" role="alert">
+                            <i class="fas fa-times-circle me-2"></i>
+                            <strong>CORS Error:</strong> ${result.message}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="alert alert-danger" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Test Failed:</strong> ${error.message}
+                    </div>
+                `;
+            } finally {
+                // Reset button
+                button.disabled = false;
+                button.innerHTML = '<i class="fas fa-play me-1"></i> Test CORS Configuration';
+            }
+        });
+    </script>
+</body>
+</html>

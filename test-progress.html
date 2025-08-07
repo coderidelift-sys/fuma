@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tournament Progress Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-result { margin: 10px 0; padding: 10px; border: 1px solid #ddd; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+    </style>
+</head>
+<body>
+    <h1>Tournament Progress Calculation Test</h1>
+    <div id="testResults"></div>
+
+    <script>
+        // Simulate the progress calculation logic from tournaments-data.js
+        function calculateProgress(tournament) {
+            const matchesCount = tournament.matchesCount || 0;
+            const completedMatches = tournament.completedMatches || 0;
+            
+            const progress = matchesCount > 0 ? 
+                Math.round((completedMatches / matchesCount) * 100) : 0;
+            
+            return progress;
+        }
+
+        // Test cases
+        const testCases = [
+            {
+                name: "Normal tournament with progress",
+                tournament: { matchesCount: 45, completedMatches: 32 },
+                expected: 71
+            },
+            {
+                name: "Tournament with no matches",
+                tournament: { matchesCount: 0, completedMatches: 0 },
+                expected: 0
+            },
+            {
+                name: "Tournament with undefined properties",
+                tournament: {},
+                expected: 0
+            },
+            {
+                name: "Tournament with null properties",
+                tournament: { matchesCount: null, completedMatches: null },
+                expected: 0
+            },
+            {
+                name: "Tournament with completed matches",
+                tournament: { matchesCount: 20, completedMatches: 20 },
+                expected: 100
+            }
+        ];
+
+        let results = [];
+        testCases.forEach(testCase => {
+            const result = calculateProgress(testCase.tournament);
+            const passed = result === testCase.expected && !isNaN(result);
+            results.push({
+                name: testCase.name,
+                expected: testCase.expected,
+                actual: result,
+                passed: passed
+            });
+        });
+
+        // Display results
+        const resultsContainer = document.getElementById('testResults');
+        results.forEach(result => {
+            const div = document.createElement('div');
+            div.className = `test-result ${result.passed ? 'success' : 'error'}`;
+            div.innerHTML = `
+                <strong>${result.name}</strong><br>
+                Expected: ${result.expected}<br>
+                Actual: ${result.actual}<br>
+                Status: ${result.passed ? 'PASS' : 'FAIL'}<br>
+                Is NaN: ${isNaN(result.actual) ? 'YES (ERROR)' : 'NO (GOOD)'}
+            `;
+            resultsContainer.appendChild(div);
+        });
+
+        // Overall summary
+        const passedTests = results.filter(r => r.passed).length;
+        const summary = document.createElement('div');
+        summary.innerHTML = `<h2>Summary: ${passedTests}/${results.length} tests passed</h2>`;
+        resultsContainer.appendChild(summary);
+    </script>
+</body>
+</html>

@@ -135,13 +135,15 @@ class AuthHandler {
     }
 
     async handleRegister() {
-        const name = document.getElementById('name').value.trim();
-        const email = document.getElementById('email').value.trim();
-        const whatsapp = document.getElementById('whatsapp').value.trim();
-        const password = document.getElementById('password').value;
-        const confirmPassword = document.getElementById('confirmPassword').value;
+        const name = document.getElementById('name')?.value?.trim();
+        const email = document.getElementById('email')?.value?.trim();
+        const whatsapp = document.getElementById('whatsapp')?.value?.trim();
+        const password = document.getElementById('password')?.value;
+        const confirmPassword = document.getElementById('confirmPassword')?.value;
+        const terms = document.getElementById('terms')?.checked;
+        const newsletter = document.getElementById('newsletter')?.checked;
 
-        // Validation
+        // Enhanced validation
         if (!name || !email || !password || !confirmPassword) {
             this.showMessage('Please fill in all required fields', 'danger');
             return;
@@ -167,17 +169,26 @@ class AuthHandler {
             return;
         }
 
+        if (!terms) {
+            this.showMessage('You must agree to the terms and conditions', 'danger');
+            return;
+        }
+
         // Show loading state
-        const submitBtn = document.querySelector('#registerForm button[type="submit"]');
-        const originalText = submitBtn.innerHTML;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creating Account...';
-        submitBtn.disabled = true;
+        const submitBtn = document.querySelector('#registerForm button[type="submit"]') || 
+                         document.querySelector('#registerBtn');
+        const originalText = submitBtn?.innerHTML;
+        if (submitBtn) {
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creating Account...';
+            submitBtn.disabled = true;
+        }
 
         try {
             const userData = {
                 name,
                 email,
-                password
+                password,
+                newsletter: newsletter || false
             };
 
             if (whatsapp) {
@@ -203,8 +214,10 @@ class AuthHandler {
             this.showMessage(error.message || 'Registration failed. Please try again.', 'danger');
         } finally {
             // Restore button state
-            submitBtn.innerHTML = originalText;
-            submitBtn.disabled = false;
+            if (submitBtn && originalText) {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
         }
     }
 

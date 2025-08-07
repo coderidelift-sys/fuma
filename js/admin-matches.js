@@ -40,7 +40,29 @@ class AdminMatches {
 
         } catch (error) {
             console.error('Error loading matches:', error);
-            FumaUtils.ui.showError('matchesContent', 'Failed to load matches: ' + error.message);
+            
+            // Check if it's a CORS error
+            if (error.message.includes('CORS') || error.message.includes('cors')) {
+                FumaUtils.ui.showToast('CORS error detected. Please check backend configuration.', 'danger', 5000);
+                
+                // Show link to troubleshooting guide
+                const corsLink = document.createElement('div');
+                corsLink.innerHTML = `
+                    <div class="alert alert-warning mt-3">
+                        <strong>CORS Configuration Issue:</strong> 
+                        <a href="cors-troubleshooting.html" target="_blank" class="alert-link">
+                            View troubleshooting guide
+                        </a>
+                    </div>
+                `;
+                document.body.appendChild(corsLink);
+                
+                setTimeout(() => {
+                    document.body.removeChild(corsLink);
+                }, 10000);
+            } else {
+                FumaUtils.ui.showError('matchesContent', 'Failed to load matches: ' + error.message);
+            }
         }
     }
 
@@ -558,7 +580,29 @@ class AdminMatches {
 
         } catch (error) {
             console.error('Error saving match:', error);
-            FumaUtils.ui.showToast('Error: ' + error.message, 'danger');
+            
+            // Check if it's a CORS error
+            if (error.message.includes('CORS') || error.message.includes('cors')) {
+                FumaUtils.ui.showToast('CORS error detected. Please check backend configuration.', 'danger', 5000);
+                
+                // Show link to troubleshooting guide
+                const corsLink = document.createElement('div');
+                corsLink.innerHTML = `
+                    <div class="alert alert-warning mt-3">
+                        <strong>CORS Configuration Issue:</strong> 
+                        <a href="cors-troubleshooting.html" target="_blank" class="alert-link">
+                            View troubleshooting guide
+                        </a>
+                    </div>
+                `;
+                document.body.appendChild(corsLink);
+                
+                setTimeout(() => {
+                    document.body.removeChild(corsLink);
+                }, 10000);
+            } else {
+                FumaUtils.ui.showToast('Error: ' + error.message, 'danger');
+            }
         } finally {
             // Restore button state
             submitBtn.innerHTML = originalText;
@@ -576,7 +620,29 @@ class AdminMatches {
             }
         } catch (error) {
             console.error('Error viewing match:', error);
-            FumaUtils.ui.showToast('Error loading match details: ' + error.message, 'danger');
+            
+            // Check if it's a CORS error
+            if (error.message.includes('CORS') || error.message.includes('cors')) {
+                FumaUtils.ui.showToast('CORS error detected. Please check backend configuration.', 'danger', 5000);
+                
+                // Show link to troubleshooting guide
+                const corsLink = document.createElement('div');
+                corsLink.innerHTML = `
+                    <div class="alert alert-warning mt-3">
+                        <strong>CORS Configuration Issue:</strong> 
+                        <a href="cors-troubleshooting.html" target="_blank" class="alert-link">
+                            View troubleshooting guide
+                        </a>
+                    </div>
+                `;
+                document.body.appendChild(corsLink);
+                
+                setTimeout(() => {
+                    document.body.removeChild(corsLink);
+                }, 10000);
+            } else {
+                FumaUtils.ui.showToast('Error loading match details: ' + error.message, 'danger');
+            }
         }
     }
 
@@ -601,7 +667,29 @@ class AdminMatches {
             }
         } catch (error) {
             console.error('Error starting match:', error);
-            FumaUtils.ui.showToast('Error starting match: ' + error.message, 'danger');
+            
+            // Check if it's a CORS error
+            if (error.message.includes('CORS') || error.message.includes('cors')) {
+                FumaUtils.ui.showToast('CORS error detected. Please check backend configuration.', 'danger', 5000);
+                
+                // Show link to troubleshooting guide
+                const corsLink = document.createElement('div');
+                corsLink.innerHTML = `
+                    <div class="alert alert-warning mt-3">
+                        <strong>CORS Configuration Issue:</strong> 
+                        <a href="cors-troubleshooting.html" target="_blank" class="alert-link">
+                            View troubleshooting guide
+                        </a>
+                    </div>
+                `;
+                document.body.appendChild(corsLink);
+                
+                setTimeout(() => {
+                    document.body.removeChild(corsLink);
+                }, 10000);
+            } else {
+                FumaUtils.ui.showToast('Error starting match: ' + error.message, 'danger');
+            }
         }
     }
 
@@ -641,7 +729,29 @@ class AdminMatches {
 
         } catch (error) {
             console.error('Error deleting match:', error);
-            FumaUtils.ui.showToast('Error deleting match: ' + error.message, 'danger');
+            
+            // Check if it's a CORS error
+            if (error.message.includes('CORS') || error.message.includes('cors')) {
+                FumaUtils.ui.showToast('CORS error detected. Please check backend configuration.', 'danger', 5000);
+                
+                // Show link to troubleshooting guide
+                const corsLink = document.createElement('div');
+                corsLink.innerHTML = `
+                    <div class="alert alert-warning mt-3">
+                        <strong>CORS Configuration Issue:</strong> 
+                        <a href="cors-troubleshooting.html" target="_blank" class="alert-link">
+                            View troubleshooting guide
+                        </a>
+                    </div>
+                `;
+                document.body.appendChild(corsLink);
+                
+                setTimeout(() => {
+                    document.body.removeChild(corsLink);
+                }, 10000);
+            } else {
+                FumaUtils.ui.showToast('Error deleting match: ' + error.message, 'danger');
+            }
         }
     }
 }

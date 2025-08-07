@@ -6,18 +6,22 @@ const { authenticateToken, requireRole } = require('../middleware/auth');
 const router = express.Router();
 const prisma = new PrismaClient();
 
-// Get all tournaments with filters
+// Get all tournaments with filters - FIXED VERSION
 router.get('/', [
   query('status').optional().custom(val => {
     const validStatuses = ['UPCOMING', 'ONGOING', 'COMPLETED', 'CANCELLED'];
-    return Array.isArray(val) 
-      ? val.every(v => validStatuses.includes(v))
-      : validStatuses.includes(val);
+    if (Array.isArray(val)) {
+      return val.every(v => validStatuses.includes(v));
+    }
+    return validStatuses.includes(val);
   }).withMessage('Status must be one of: UPCOMING, ONGOING, COMPLETED, CANCELLED or an array of these values'),
   query('type').optional().isIn(['LEAGUE', 'KNOCKOUT', 'GROUP_KNOCKOUT']),
   query('search').optional().trim().isLength({ min: 1, max: 100 }),
   query('page').optional().isInt({ min: 1 }),
-  query('limit').optional().isInt({ min: 1, max: 100 })
+  query('limit').optional().isInt({ min: 1, max: 100 }),
+  query('featured').optional().isBoolean(),
+  query('orderBy').optional().isIn(['name', 'startDate', 'endDate', 'createdAt']),
+  query('order').optional().isIn(['asc', 'desc'])
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -29,20 +33,54 @@ router.get('/', [
       });
     }
 
-    const { status, type, search, page = 1, limit = 20 } = req.query;
-    const skip = (page - 1) * limit;
+    const { 
+      status, 
+      type, 
+      search, 
+      page = 1, 
+      limit = 20, 
+      featured,
+      orderBy = 'startDate',
+      order = 'desc'
+    } = req.query;
+    
+    const skip = (parseInt(page) - 1) * parseInt(limit);
 
     // Build where clause
     const where = {};
+    
     if (status) {
-      where.status = Array.isArray(status) ? { in: status } : status;
+      // Handle status as both string and array
+      let statusArray = Array.isArray(status) ? status : [status];
+      // Filter to ensure only valid statuses
+      statusArray = statusArray.filter(s => ['UPCOMING', 'ONGOING', 'COMPLETED', 'CANCELLED'].includes(s));
+      
+      if (statusArray.length === 1) {
+        where.status = statusArray[0];
+      } else if (statusArray.length > 1) {
+        where.status = { in: statusArray };
+      }
     }
+    
     if (type) where.tournamentType = type;
+    
     if (search) {
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
         { description: { contains: search, mode: 'insensitive' } }
       ];
+    }
+
+    // Build orderBy clause
+    let orderByClause = {};
+    if (orderBy === 'name') {
+      orderByClause = { name: order };
+    } else if (orderBy === 'startDate') {
+      orderByClause = { startDate: order };
+    } else if (orderBy === 'endDate') {
+      orderByClause = { endDate: order };
+    } else {
+      orderByClause = { createdAt: order };
     }
 
     const [tournaments, total] = await Promise.all([
@@ -56,23 +94,29 @@ router.get('/', [
             }
           }
         },
-        orderBy: { startDate: 'desc' },
-        skip: parseInt(skip),
+        orderBy: orderByClause,
+        skip: skip,
         take: parseInt(limit)
       }),
       prisma.tournament.count({ where })
     ]);
 
+    // Transform data for frontend compatibility
+    const transformedTournaments = tournaments.map(tournament => ({
+      ...tournament,
+      teamsCount: tournament._count.tournamentTeams,
+      matchesCount: tournament._count.matches
+    }));
+
+    // Return data in the format expected by frontend
     res.json({
       success: true,
-      data: {
-        tournaments,
-        pagination: {
-          page: parseInt(page),
-          limit: parseInt(limit),
-          total,
-          pages: Math.ceil(total / limit)
-        }
+      data: transformedTournaments,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        pages: Math.ceil(total / parseInt(limit))
       }
     });
 
@@ -80,7 +124,8 @@ router.get('/', [
     console.error('Get tournaments error:', error);
     res.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: 'Internal server error',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
@@ -151,7 +196,7 @@ router.get('/:id', async (req, res) => {
 
     res.json({
       success: true,
-      data: { tournament }
+      data: tournament
     });
 
   } catch (error) {
@@ -206,7 +251,7 @@ router.post('/', authenticateToken, requireRole(['ADMIN']), [
     res.status(201).json({
       success: true,
       message: 'Tournament created successfully',
-      data: { tournament }
+      data: tournament
     });
 
   } catch (error) {
@@ -256,7 +301,7 @@ router.put('/:id', authenticateToken, requireRole(['ADMIN']), [
     res.json({
       success: true,
       message: 'Tournament updated successfully',
-      data: { tournament }
+      data: tournament
     });
 
   } catch (error) {
@@ -343,7 +388,7 @@ router.post('/:id/teams', authenticateToken, requireRole(['ADMIN']), [
     res.status(201).json({
       success: true,
       message: 'Team added to tournament successfully',
-      data: { tournamentTeam }
+      data: tournamentTeam
     });
 
   } catch (error) {
@@ -394,7 +439,7 @@ router.get('/:id/standings', async (req, res) => {
 
     res.json({
       success: true,
-      data: { standings: groupedStandings }
+      data: groupedStandings
     });
 
   } catch (error) {

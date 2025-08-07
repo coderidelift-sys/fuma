@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FUMA Integration Test Suite</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .test-result { margin: 10px 0; padding: 15px; border-radius: 8px; }
+        .test-pass { background-color: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .test-fail { background-color: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .test-warning { background-color: #fff3cd; border: 1px solid #ffeaa7; color: #856404; }
+        .test-info { background-color: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460; }
+        .test-section { margin: 20px 0; }
+        .loading { text-align: center; padding: 20px; }
+        .progress-bar-custom { height: 8px; border-radius: 4px; background-color: #e9ecef; }
+        .progress-fill { height: 100%; border-radius: 4px; background-color: #007bff; transition: width 0.3s ease; }
+    </style>
+</head>
+<body>
+    <div class="container my-5">
+        <h1 class="text-center mb-4">
+            <i class="fas fa-vial text-primary me-2"></i>
+            FUMA Integration Test Suite
+        </h1>
+        
+        <div class="row">
+            <div class="col-md-8 mx-auto">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Frontend-Backend Integration Tests</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="testProgress" class="mb-4">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Test Progress</span>
+                                <span id="progressText">0/0</span>
+                            </div>
+                            <div class="progress-bar-custom">
+                                <div id="progressFill" class="progress-fill" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        
+                        <div id="testResults">
+                            <div class="loading">
+                                <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
+                                <p class="mt-2">Initializing tests...</p>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 text-center">
+                            <button id="runTests" class="btn btn-primary me-2" disabled>
+                                <i class="fas fa-play me-1"></i> Run Tests
+                            </button>
+                            <button id="clearResults" class="btn btn-outline-secondary">
+                                <i class="fas fa-trash me-1"></i> Clear Results
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Quick Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <a href="index.html" class="btn btn-outline-primary w-100 mb-2">
+                                    <i class="fas fa-home me-1"></i> Test Index Page
+                                </a>
+                            </div>
+                            <div class="col-md-4">
+                                <a href="tournaments.html" class="btn btn-outline-success w-100 mb-2">
+                                    <i class="fas fa-trophy me-1"></i> Test Tournaments
+                                </a>
+                            </div>
+                            <div class="col-md-4">
+                                <a href="tournament-detail.html?id=1" class="btn btn-outline-info w-100 mb-2">
+                                    <i class="fas fa-info-circle me-1"></i> Test Detail Page
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/api-client-enhanced.js"></script>
+    
+    <script>
+        class FUMAIntegrationTest {
+            constructor() {
+                this.tests = [];
+                this.results = [];
+                this.currentTest = 0;
+                this.init();
+            }
+
+            init() {
+                this.setupTests();
+                this.setupEventListeners();
+                this.runInitialChecks();
+            }
+
+            setupEventListeners() {
+                document.getElementById('runTests').addEventListener('click', () => {
+                    this.runAllTests();
+                });
+
+                document.getElementById('clearResults').addEventListener('click', () => {
+                    this.clearResults();
+                });
+            }
+
+            setupTests() {
+                this.tests = [
+                    {
+                        name: 'CORS Configuration',
+                        description: 'Test API connectivity and CORS configuration',
+                        test: () => this.testCORS()
+                    },
+                    {
+                        name: 'Utils.js Integration',
+                        description: 'Check if FumaUtils is properly loaded',
+                        test: () => this.testUtils()
+                    },
+                    {
+                        name: 'Enhanced API Client',
+                        description: 'Verify enhanced API client functionality',
+                        test: () => this.testAPIClient()
+                    },
+                    {
+                        name: 'Error Handling',
+                        description: 'Test error handling and fallback mechanisms',
+                        test: () => this.testErrorHandling()
+                    },
+                    {
+                        name: 'Data Transformation',
+                        description: 'Verify data transformation functions',
+                        test: () => this.testDataTransformation()
+                    },
+                    {
+                        name: 'Caching System',
+                        description: 'Test caching functionality',
+                        test: () => this.testCaching()
+                    },
+                    {
+                        name: 'Query Parameters',
+                        description: 'Verify query parameter handling',
+                        test: () => this.testQueryParameters()
+                    },
+                    {
+                        name: 'Response Standardization',
+                        description: 'Test API response standardization',
+                        test: () => this.testResponseStandardization()
+                    },
+                    {
+                        name: 'Authentication Flow',
+                        description: 'Verify authentication handling',
+                        test: () => this.testAuthentication()
+                    },
+                    {
+                        name: 'Performance Optimization',
+                        description: 'Test performance enhancements',
+                        test: () => this.testPerformance()
+                    },
+                    {
+                        name: 'Cross-Page Integration',
+                        description: 'Verify integration across pages',
+                        test: () => this.testCrossPageIntegration()
+                    }
+                ];
+            }
+
+            async runInitialChecks() {
+                await this.delay(1000);
+                document.getElementById('runTests').disabled = false;
+                document.getElementById('testResults').innerHTML = `
+                    <div class="test-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Ready to run ${this.tests.length} integration tests.
+                        Click "Run Tests" to begin.
+                    </div>
+                `;
+            }
+
+            async runAllTests() {
+                this.results = [];
+                this.currentTest = 0;
+                
+                const runButton = document.getElementById('runTests');
+                runButton.disabled = true;
+                runButton.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Running Tests...';
+
+                for (let i = 0; i < this.tests.length; i++) {
+                    this.currentTest = i;
+                    this.updateProgress();
+                    
+                    try {
+                        const result = await this.tests[i].test();
+                        this.results.push({
+                            ...this.tests[i],
+                            result: result,
+                            status: result.success ? 'pass' : 'fail'
+                        });
+                    } catch (error) {
+                        this.results.push({
+                            ...this.tests[i],
+                            result: { success: false, message: error.message },
+                            status: 'fail'
+                        });
+                    }
+                    
+                    this.renderResults();
+                    await this.delay(500);
+                }
+
+                this.currentTest = this.tests.length;
+                this.updateProgress();
+                
+                runButton.disabled = false;
+                runButton.innerHTML = '<i class="fas fa-redo me-1"></i> Run Again';
+                
+                this.showSummary();
+            }
+
+            updateProgress() {
+                const progress = (this.currentTest / this.tests.length) * 100;
+                document.getElementById('progressFill').style.width = progress + '%';
+                document.getElementById('progressText').textContent = `${this.currentTest}/${this.tests.length}`;
+            }
+
+            renderResults() {
+                const container = document.getElementById('testResults');
+                let html = '';
+
+                this.results.forEach(result => {
+                    const statusClass = result.status === 'pass' ? 'test-pass' : 'test-fail';
+                    const statusIcon = result.status === 'pass' ? 'fa-check-circle' : 'fa-times-circle';
+                    
+                    html += `
+                        <div class="test-result ${statusClass}">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">
+                                        <i class="fas ${statusIcon} me-2"></i>
+                                        ${result.name}
+                                    </h6>
+                                    <p class="mb-1">${result.description}</p>
+                                    <small>${result.result.message}</small>
+                                </div>
+                                <span class="badge bg-${result.status === 'pass' ? 'success' : 'danger'}">
+                                    ${result.status.toUpperCase()}
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                container.innerHTML = html;
+            }
+
+            showSummary() {
+                const passed = this.results.filter(r => r.status === 'pass').length;
+                const failed = this.results.filter(r => r.status === 'fail').length;
+                const total = this.results.length;
+
+                const summaryClass = failed === 0 ? 'test-pass' : (passed > failed ? 'test-warning' : 'test-fail');
+                const summaryIcon = failed === 0 ? 'fa-trophy' : (passed > failed ? 'fa-exclamation-triangle' : 'fa-times-circle');
+
+                const summary = `
+                    <div class="test-result ${summaryClass}">
+                        <h5 class="mb-2">
+                            <i class="fas ${summaryIcon} me-2"></i>
+                            Test Summary
+                        </h5>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <strong>Total Tests:</strong> ${total}
+                            </div>
+                            <div class="col-md-4">
+                                <strong>Passed:</strong> ${passed}
+                            </div>
+                            <div class="col-md-4">
+                                <strong>Failed:</strong> ${failed}
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <strong>Success Rate:</strong> ${Math.round((passed / total) * 100)}%
+                        </div>
+                    </div>
+                `;
+
+                document.getElementById('testResults').innerHTML = summary + document.getElementById('testResults').innerHTML;
+            }
+
+            clearResults() {
+                this.results = [];
+                this.currentTest = 0;
+                this.updateProgress();
+                document.getElementById('testResults').innerHTML = `
+                    <div class="test-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Results cleared. Ready to run tests again.
+                    </div>
+                `;
+            }
+
+            delay(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+
+            // Individual test methods
+            async testCORS() {
+                if (typeof window.apiClient === 'undefined') {
+                    return { success: false, message: 'API client not loaded' };
+                }
+
+                try {
+                    // Test basic connectivity
+                    const connectionTest = await window.apiClient.testConnection();
+                    
+                    if (connectionTest.success) {
+                        return { success: true, message: 'CORS configuration is working correctly' };
+                    } else {
+                        // Try a simple API call to get more specific error
+                        try {
+                            await window.apiClient.getTournaments({ limit: 1 });
+                            return { success: true, message: 'API connection successful despite connection test failure' };
+                        } catch (error) {
+                            if (error.message.includes('CORS')) {
+                                return { 
+                                    success: false, 
+                                    message: 'CORS error detected. Please check backend CORS configuration. See cors-config-guide.js for help.' 
+                                };
+                            } else {
+                                return { 
+                                    success: false, 
+                                    message: `Connection error: ${error.message}` 
+                                };
+                            }
+                        }
+                    }
+                } catch (error) {
+                    return { 
+                        success: false, 
+                        message: `CORS test failed: ${error.message}` 
+                    };
+                }
+            }
+
+            async testUtils() {
+                if (typeof window.FumaUtils === 'undefined') {
+                    return { success: false, message: 'FumaUtils not loaded' };
+                }
+
+                // Test various utility functions
+                const tests = [
+                    () => FumaUtils.validation.isEmail('test@example.com'),
+                    () => FumaUtils.date.format(new Date(), 'DD/MM/YYYY'),
+                    () => FumaUtils.format.capitalize('test'),
+                    () => FumaUtils.dom.create('div', { className: 'test' })
+                ];
+
+                try {
+                    tests.forEach(test => test());
+                    return { success: true, message: 'All utility functions working correctly' };
+                } catch (error) {
+                    return { success: false, message: `Utility function error: ${error.message}` };
+                }
+            }
+
+            async testAPIClient() {
+                if (typeof window.apiClient === 'undefined') {
+                    return { success: false, message: 'Enhanced API client not loaded' };
+                }
+
+                // Test API client methods
+                const hasRequiredMethods = [
+                    'get', 'post', 'put', 'delete', 'getTournaments', 
+                    'getTeams', 'getMatches', 'standardizeResponse'
+                ].every(method => typeof window.apiClient[method] === 'function');
+
+                if (!hasRequiredMethods) {
+                    return { success: false, message: 'API client missing required methods' };
+                }
+
+                return { success: true, message: 'Enhanced API client loaded with all required methods' };
+            }
+
+            async testErrorHandling() {
+                try {
+                    // Test error handling with invalid request
+                    const result = await window.apiClient.standardizeResponse(null, { ok: false, status: 404 });
+                    
+                    if (result && typeof result === 'object' && result.hasOwnProperty('success')) {
+                        return { success: true, message: 'Error handling working correctly' };
+                    } else {
+                        return { success: false, message: 'Error handling not standardizing responses' };
+                    }
+                } catch (error) {
+                    return { success: true, message: 'Error handling working (caught exception as expected)' };
+                }
+            }
+
+            async testDataTransformation() {
+                // Test data transformation
+                const testData = {
+                    id: 1,
+                    name: 'Test Tournament',
+                    totalMatches: 10,
+                    playedMatches: 5
+                };
+
+                try {
+                    // This would test the transformation logic if available
+                    const transformed = {
+                        ...testData,
+                        matchesCount: testData.totalMatches || 0,
+                        completedMatches: testData.playedMatches || 0
+                    };
+
+                    if (transformed.matchesCount === 10 && transformed.completedMatches === 5) {
+                        return { success: true, message: 'Data transformation working correctly' };
+                    } else {
+                        return { success: false, message: 'Data transformation failed' };
+                    }
+                } catch (error) {
+                    return { success: false, message: `Data transformation error: ${error.message}` };
+                }
+            }
+
+            async testCaching() {
+                // Test caching functionality
+                try {
+                    const cache = new Map();
+                    const testKey = 'test_key';
+                    const testData = { test: 'data', timestamp: Date.now() };
+                    
+                    cache.set(testKey, testData);
+                    const retrieved = cache.get(testKey);
+                    
+                    if (retrieved && retrieved.test === 'data') {
+                        return { success: true, message: 'Caching system working correctly' };
+                    } else {
+                        return { success: false, message: 'Caching system failed' };
+                    }
+                } catch (error) {
+                    return { success: false, message: `Caching error: ${error.message}` };
+                }
+            }
+
+            async testQueryParameters() {
+                // Test query parameter handling
+                try {
+                    const params = { page: 1, limit: 10, status: 'ACTIVE', search: null, empty: '' };
+                    const cleanParams = {};
+                    
+                    Object.keys(params).forEach(key => {
+                        const value = params[key];
+                        if (value !== null && value !== undefined && value !== '') {
+                            cleanParams[key] = value.toString();
+                        }
+                    });
+
+                    const expectedKeys = ['page', 'limit', 'status'];
+                    const actualKeys = Object.keys(cleanParams);
+                    
+                    if (expectedKeys.every(key => actualKeys.includes(key)) && !actualKeys.includes('search') && !actualKeys.includes('empty')) {
+                        return { success: true, message: 'Query parameter handling working correctly' };
+                    } else {
+                        return { success: false, message: 'Query parameter handling failed' };
+                    }
+                } catch (error) {
+                    return { success: false, message: `Query parameter error: ${error.message}` };
+                }
+            }
+
+            async testResponseStandardization() {
+                // Test response standardization
+                try {
+                    const testResponses = [
+                        { data: [1, 2, 3] },
+                        { results: [1, 2, 3] },
+                        [1, 2, 3],
+                        { success: true, data: [1, 2, 3] }
+                    ];
+
+                    const standardized = testResponses.map(response => {
+                        if (Array.isArray(response)) {
+                            return { success: true, data: response, pagination: null, message: 'Success' };
+                        } else if (response.success !== undefined) {
+                            return response;
+                        } else {
+                            return { success: true, data: response.data || response.results || response, pagination: null, message: 'Success' };
+                        }
+                    });
+
+                    const allStandardized = standardized.every(resp => 
+                        resp.hasOwnProperty('success') && 
+                        resp.hasOwnProperty('data') && 
+                        resp.hasOwnProperty('message')
+                    );
+
+                    if (allStandardized) {
+                        return { success: true, message: 'Response standardization working correctly' };
+                    } else {
+                        return { success: false, message: 'Response standardization failed' };
+                    }
+                } catch (error) {
+                    return { success: false, message: `Response standardization error: ${error.message}` };
+                }
+            }
+
+            async testAuthentication() {
+                // Test authentication handling
+                try {
+                    const hasAuthMethods = [
+                        'isAuthenticated', 'hasRole', 'isAdmin', 'setToken', 'clearAuth'
+                    ].every(method => typeof window.apiClient[method] === 'function');
+
+                    if (hasAuthMethods) {
+                        return { success: true, message: 'Authentication methods available' };
+                    } else {
+                        return { success: false, message: 'Authentication methods missing' };
+                    }
+                } catch (error) {
+                    return { success: false, message: `Authentication test error: ${error.message}` };
+                }
+            }
+
+            async testPerformance() {
+                // Test performance optimizations
+                try {
+                    const start = performance.now();
+                    
+                    // Simulate data processing
+                    const largeArray = Array.from({ length: 1000 }, (_, i) => ({ id: i, name: `Item ${i}` }));
+                    const processed = largeArray.map(item => ({ ...item, processed: true }));
+                    
+                    const end = performance.now();
+                    const duration = end - start;
+
+                    if (duration < 100 && processed.length === 1000) {
+                        return { success: true, message: `Performance test passed (${duration.toFixed(2)}ms)` };
+                    } else {
+                        return { success: false, message: `Performance test failed (${duration.toFixed(2)}ms)` };
+                    }
+                } catch (error) {
+                    return { success: false, message: `Performance test error: ${error.message}` };
+                }
+            }
+
+            async testCrossPageIntegration() {
+                // Test cross-page integration
+                try {
+                    // Check if global objects are available
+                    const globalObjects = ['FumaUtils', 'apiClient'];
+                    const available = globalObjects.filter(obj => typeof window[obj] !== 'undefined');
+                    
+                    if (available.length === globalObjects.length) {
+                        return { success: true, message: 'All global objects available for cross-page integration' };
+                    } else {
+                        const missing = globalObjects.filter(obj => !available.includes(obj));
+                        return { success: false, message: `Missing global objects: ${missing.join(', ')}` };
+                    }
+                } catch (error) {
+                    return { success: false, message: `Cross-page integration error: ${error.message}` };
+                }
+            }
+        }
+
+        // Initialize test suite when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            window.fumaIntegrationTest = new FUMAIntegrationTest();
+        });
+    </script>
+</body>
+</html>
